@@ -14,7 +14,7 @@ use tui::{
 };
 use unicode_width::UnicodeWidthStr;
 
-use crate::appstate::appstate::{State, InputMode};
+use crate::appstate::appstate::{State, InputMode, TabType};
 
 
 pub fn render_ui<B: Backend>(f: &mut Frame<B>, state: &State) {
@@ -88,17 +88,38 @@ fn draw_input_box<'a>(state: &'a State<'a>) -> Paragraph<'a>{
 fn draw_list<'a>(state: &State<'a>) -> List<'a>{
     // loop throug all todoLists
     // list.name
-    let items: Vec<ListItem> = state
-        .todo_lists
-        .iter()
-        .enumerate()    
-        .map(|(i, m)| {
-            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.name)))];
-            ListItem::new(content)
-    })
-    .collect();
 
+    // match here for the home page or the list type
+    let items: Vec<ListItem> = match state.tab_type{
+        TabType::Home=>{
+            state
+            .todo_lists
+            .iter()
+            .enumerate()    
+            .map(|(i, m)| {
+                let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.name)))];
+                ListItem::new(content)
+            })
+            .collect()
+        },
+        TabType::ListSelected=>{
+            state
+            .todo_lists[state.index]
+            .list
+            .iter()
+            .enumerate()    
+            .map(|(i, m)| {
+                let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.item_name)))];
+                ListItem::new(content)
+            })
+            .collect()
+        },
+    };
+    
+    
+    
 
+    // set title 
     return List::new(items)
         .block(Block::default().borders(Borders::ALL).title("List"))
         .highlight_style(

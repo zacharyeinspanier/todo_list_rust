@@ -17,7 +17,7 @@ mod render;
 use crate::render::render_ui;
 
 mod appstate;
-use crate::appstate::appstate::{State, InputMode};
+use crate::appstate::appstate::{State, InputMode, TabType};
 
 mod todo;
 use crate::todo::todo::{TodoList, TodoItem};
@@ -59,8 +59,26 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut state: State) -> io::Resu
             match state.input_mode {
                 InputMode::Normal => match key.code {
                     KeyCode::Char('q') => {return Ok(())},
-                    KeyCode::Right => {state.next()},
-                    KeyCode::Left => {state.previous()},
+                    KeyCode::Right => {
+                        state.next();
+                        // update tab type
+                        if state.index as i32 == 0{
+                            state.tab_type = TabType::Home;
+                        }
+                        else{
+                            state.tab_type = TabType::ListSelected;
+                        }
+                    },
+                    KeyCode::Left => {
+                        state.previous();
+                        // update tab type
+                        if state.index as i32 == 0{
+                            state.tab_type = TabType::Home;
+                        }
+                        else{
+                            state.tab_type = TabType::ListSelected;
+                        }
+                    },
                     KeyCode::Char('e') => {state.input_mode = InputMode::Editing},
                     _ => {}
                 },
@@ -69,9 +87,18 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut state: State) -> io::Resu
                     KeyCode::Char(c) => {state.input.push(c);}
                     KeyCode::Backspace => {state.input.pop();}
                     KeyCode::Enter => {
-                        let list_name = state.input.drain(..).collect();
-                        let new_list = TodoList::new(list_name);
-                        state.todo_lists.push(new_list);
+                        // match on tab type
+                        match state.tab_type{
+                            TabType::Home =>{
+                                state.update_titles()
+                            },
+                            TabType::ListSelected =>{
+                                // new itme
+                                let item_name:String = state.input.drain(..).collect();
+                                state.todo_lists[state.index].add(item_name);
+                            },
+                        }
+                        
                     }
                     _ => {}
 
