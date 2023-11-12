@@ -95,7 +95,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut state: State) -> io::Resu
                             TabType::ListSelected =>{
                                 // new itme
                                 let item_name:String = state.input.drain(..).collect();
-                                state.todo_lists[state.index].add(item_name);
+                                state.todo_lists[state.index-1].add(item_name);
                             },
                         }
                         

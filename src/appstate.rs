@@ -25,8 +25,8 @@ pub mod appstate{
         Editing,
     }
 
-    pub struct State<'a> {
-        pub titles: Vec<&'a str>,
+    pub struct State {
+        pub titles: Vec<String>,
         pub index: usize,
         pub input: String,
         pub input_mode: InputMode,
@@ -35,10 +35,10 @@ pub mod appstate{
 
     }
     //TODO add dictionary to hold todolists
-    impl<'a> State<'a> {
-        pub fn new() -> State<'a> {
+    impl State{
+        pub fn new() -> State {
             State {
-                titles: vec!["home"],
+                titles: vec!["home".to_string()],
                 index: 0,
                 input: String::new(),
                 input_mode: InputMode::Normal,
@@ -48,10 +48,16 @@ pub mod appstate{
         }
 
         pub fn update_titles(&mut self){
-            let list_name:&'a String = &self.input;
+            let list_name: String = self.input.drain(..).collect();
+            if !self.titles.contains(&list_name){
 
-            self.todo_lists.push(TodoList::new(String::from(list_name)));
-            self.titles.push(list_name.as_str());
+                self.todo_lists.push(TodoList::new(String::from(list_name.clone())));
+                while self.titles.len() > 1 as usize{
+                    self.titles.pop();
+                }
+                let mut new : Vec<String> = self.todo_lists.iter().map(|x| x.name.clone()).collect();
+                self.titles.append(&mut new);
+            }
               
         }
     

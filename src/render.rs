@@ -53,7 +53,7 @@ pub fn render_ui<B: Backend>(f: &mut Frame<B>, state: &State) {
     f.render_widget(list, chunks[2]);
 }
 
-fn draw_tabs<'a>(state: &State<'a>) -> Tabs<'a>{
+fn draw_tabs(state: &State) -> Tabs{
     let titles = state
         .titles
         .iter()
@@ -78,14 +78,14 @@ fn draw_tabs<'a>(state: &State<'a>) -> Tabs<'a>{
     
 }
 
-fn draw_input_box<'a>(state: &'a State<'a>) -> Paragraph<'a>{
+fn draw_input_box(state: &State) -> Paragraph{
     return Paragraph::new(state.input.as_ref())
         .style(Style::default())
         .block(Block::default().borders(Borders::ALL).title("Input"));
     
 }
 
-fn draw_list<'a>(state: &State<'a>) -> List<'a>{
+fn draw_list(state: &State) -> List{
     // loop throug all todoLists
     // list.name
 
@@ -104,7 +104,7 @@ fn draw_list<'a>(state: &State<'a>) -> List<'a>{
         },
         TabType::ListSelected=>{
             state
-            .todo_lists[state.index]
+            .todo_lists[state.index-1]
             .list
             .iter()
             .enumerate()    
