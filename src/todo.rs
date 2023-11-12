@@ -13,6 +13,13 @@ pub mod todo{
     }
 
     impl TodoList{
+
+        pub fn new(list_name: String) ->TodoList{
+            TodoList{
+                name: list_name,
+                list: Vec::new(),
+            }
+        }
         /*
             Add to the todo list
             Pram: string, name of TodoItem to create

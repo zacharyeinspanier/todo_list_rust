@@ -1,0 +1,48 @@
+Display List of all lists 
+    Allow user to click the lists
+
+Dsiply selected lists  
+    Allow user to click item and cross off
+
+
+| Todo Lists -----------------Activate List--------------------
+| List 1  (Activate)         |  Item 1  (clickable)
+| List 1                     |  Item 1
+| List 1                     |  Item 1
+| List 1                     |  Item 1
+| List 1                     |  Item 1
+| List 1                     |  Item 1
+| List 1                     |  Item 1
+
+Button: New List              Button Delete item
+Button Delete List            Delete all items
+
+App will control tabs
+use home tab to control adding new lists
+use tab for list: https://github.com/fdehau/tui-rs/blob/v0.19.0/examples/tabs.rs
+List will control lists
+use input for adding: https://github.com/fdehau/tui-rs/blob/v0.19.0/examples/user_input.rs
+navagate list itmes with keys, press enter to complete list. Press delete to remove
+include delete list option at bottom of list
+footer for instructions
+
+
+
+tabs
+input or list + input
+Delete options
+Footer with explication
+Home:
+    input Allowing user to create list with name entered
+
+tab n:
+    list widget allowing user to navigate list
+
+
+files
+
+main  
+app folder
+    ui this will render all items
+    home_tab return the home draw
+    list_tab return the list draw

@@ -7,3 +7,11 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.31"
+crossterm = "0.27.0"
+rand = "0.8.5"
+serde = "1.0.192"
+serde_json = "1.0.108"
+termion = "2.0.3"
+thiserror = "1.0.50"
+tui = "0.19.0"
+unicode-width = "0.1.11"
