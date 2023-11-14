@@ -6,30 +6,38 @@ use crossterm::{
 use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
-    layout::{Constraint, Direction, Layout},
+    layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
-    text::{Span, Spans},
+    text::{Span, Spans, Text},
     widgets::{Block, Borders, Tabs, Paragraph, List, ListItem},
     Frame, Terminal,
 };
 use unicode_width::UnicodeWidthStr;
 
-use crate::appstate::appstate::{State, InputMode, TabType};
+use crate::appstate::appstate::{State, InputMode, InputBox};
+
+enum DrawList{
+    AllLists,
+    ListItems,
+}
 
 
 pub fn render_ui<B: Backend>(f: &mut Frame<B>, state: &State) {
     let size = f.size();
+    //println!("{:?}", size);
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .margin(5)
+        .margin(2)
         .constraints(
             [
                 Constraint::Length(3),
-                Constraint::Length(3),
-                Constraint::Min(1),
+                Constraint::Percentage(65),
+                Constraint::Percentage(20),
+
             ]
             .as_ref())
         .split(size);
+
 
     let block = Block::default().style(Style::default().bg(Color::White).fg(Color::Black));
     f.render_widget(block, size);
@@ -38,35 +46,23 @@ pub fn render_ui<B: Backend>(f: &mut Frame<B>, state: &State) {
     let tabs = draw_tabs(state);
     f.render_widget(tabs, chunks[0]);
 
-    let input = draw_input_box(state);
-    f.render_widget(input, chunks[1]);
+    draw_list_display(f, state, chunks[1]);
 
-    match state.input_mode{
-        InputMode::Normal=>{},
-        InputMode::Editing=>{
-            f.set_cursor(chunks[1].x + state.input.width() as u16 + 1, chunks[1].y+1);
-
-        },
-    }
-
-    let list  = draw_list(state);
-    f.render_widget(list, chunks[2]);
+    let footer = draw_footer(state);
+    f.render_widget(footer, chunks[2]);
 }
 
 fn draw_tabs(state: &State) -> Tabs{
-    let titles = state
-        .titles
+ 
+    let todo_names = state
+        .todo_lists
         .iter()
         .map(|t| {
-            let (first, rest) = t.split_at(1);
-            Spans::from(vec![
-                Span::styled(first, Style::default().fg(Color::Yellow)),
-                Span::styled(rest, Style::default().fg(Color::Green)),
-            ])
+            Spans::from(Span::styled(&t.name, Style::default().fg(Color::Green)))
         })
         .collect();
-        
-        return Tabs::new(titles)
+
+        return Tabs::new(todo_names)
         .block(Block::default().borders(Borders::ALL).title("Tabs"))
         .select(state.index)
         .style(Style::default().fg(Color::Cyan))
@@ -75,53 +71,98 @@ fn draw_tabs(state: &State) -> Tabs{
                 .add_modifier(Modifier::BOLD)
                 .bg(Color::Black),
         );
-    
 }
 
-fn draw_input_box(state: &State) -> Paragraph{
-    return Paragraph::new(state.input.as_ref())
+fn draw_list_display<B: Backend>(f: &mut Frame<B>, state: &State, size: Rect){
+
+    let list_input_chunks= Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints(
+            [
+                Constraint::Percentage(50),
+                Constraint::Percentage(50),
+            ]
+            .as_ref())
+        .split(size);
+        
+        let all_list_chunk:Vec<Rect> = draw_list_input_box(f, state, list_input_chunks[0], DrawList::AllLists);
+        let item_list_chunk: Vec<Rect> = draw_list_input_box(f, state, list_input_chunks[1], DrawList::ListItems);
+
+        match state.input_mode{
+            InputMode::Normal=>{},
+            InputMode::Editing=>{
+                match state.input_box{
+                    InputBox::AddList=>{
+                        f.set_cursor(all_list_chunk[1].x + state.input_list.width() as u16 + 1, all_list_chunk[1].y+1);
+                    },
+                    InputBox::AddItem=>{
+                        f.set_cursor(item_list_chunk[1].x + state.input_item.width() as u16 + 1, item_list_chunk[1].y+1);
+                    },
+                }
+            },
+        }
+}
+
+fn draw_list_input_box<B: Backend>(f: &mut Frame<B>, state: &State, size: Rect, draw_type: DrawList) -> Vec<Rect>{
+    let list_input_chunk = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(
+            [
+                Constraint::Min(1),
+                Constraint::Length(3),
+            ]
+            .as_ref())
+        .split(size);
+
+    match draw_type{
+        DrawList::AllLists=>{
+            let list  = draw_list_todo_lists(state);
+            f.render_widget(list, list_input_chunk[0]);
+
+            let input = draw_input_list_name(state);
+            f.render_widget(input, list_input_chunk[1]);
+        },
+        DrawList::ListItems=>{
+            let list  = draw_list_todo_items(state);
+            f.render_widget(list, list_input_chunk[0]);
+
+            let input = draw_input_item_name(state);
+            f.render_widget(input, list_input_chunk[1]);
+        },
+        _ => {},
+    }
+
+    return list_input_chunk;
+}
+
+fn draw_input_list_name(state: &State) -> Paragraph{
+    return Paragraph::new(state.input_list.as_ref())
         .style(Style::default())
-        .block(Block::default().borders(Borders::ALL).title("Input"));
-    
+        .block(Block::default().borders(Borders::ALL).title("List Input"));
 }
 
-fn draw_list(state: &State) -> List{
-    // loop throug all todoLists
-    // list.name
+fn draw_input_item_name(state: &State) -> Paragraph{
+    return Paragraph::new(state.input_item.as_ref())
+        .style(Style::default())
+        .block(Block::default().borders(Borders::ALL).title("Item Input"));
+}
 
-    // match here for the home page or the list type
-    let items: Vec<ListItem> = match state.tab_type{
-        TabType::Home=>{
-            state
-            .todo_lists
-            .iter()
-            .enumerate()    
-            .map(|(i, m)| {
-                let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.name)))];
-                ListItem::new(content)
-            })
-            .collect()
-        },
-        TabType::ListSelected=>{
-            state
-            .todo_lists[state.index-1]
-            .list
-            .iter()
-            .enumerate()    
-            .map(|(i, m)| {
-                let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.item_name)))];
-                ListItem::new(content)
-            })
-            .collect()
-        },
-    };
-    
-    
-    
+fn draw_list_todo_items(state: &State) -> List{
+
+    let items: Vec<ListItem> = state
+        .todo_lists[state.index]
+        .list
+        .iter()
+        .enumerate()    
+        .map(|(i, m)| {
+            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.item_name)))];
+            ListItem::new(content)
+        })
+        .collect();
 
     // set title 
     return List::new(items)
-        .block(Block::default().borders(Borders::ALL).title("List"))
+        .block(Block::default().borders(Borders::ALL).title("List Items"))
         .highlight_style(
             Style::default()
                 .bg(Color::LightGreen)
@@ -131,6 +172,41 @@ fn draw_list(state: &State) -> List{
 
 }
 
-fn draw_footer()-> i32{
-    return 0;
+fn draw_list_todo_lists(state: &State) -> List{
+
+    let all_lists: Vec<ListItem>  = state
+        .todo_lists
+        .iter()
+        .enumerate()    
+        .map(|(i, m)| {
+            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.name)))];
+            ListItem::new(content)
+        })
+    .collect();
+
+    // set title 
+    return List::new(all_lists)
+    .block(Block::default().borders(Borders::ALL).title("All Lists"))
+    .highlight_style(
+        Style::default()
+            .bg(Color::LightGreen)
+            .add_modifier(Modifier::BOLD),
+    )
+    .highlight_symbol(">> ");
+
+}
+
+fn draw_footer(state: &State)-> Paragraph{
+
+    let mut text = Text::from(Spans::from(vec![
+        Span::raw("Press e to enter name for list. Press ENTER to create the list.\n"),
+        Span::raw("Press i to enter item for your list. Press ENTER to add the item.\n"),
+        Span::raw("Press esc to end input\n"),
+        Span::raw("\nUse Arrow keys (left, right) to navigate tabs thus selecting list.\n"),
+        Span::raw("To exit app "),
+    ]));
+    text.patch_style(Style::default());
+
+    return Paragraph::new(text)
+        .block(Block::default().borders(Borders::ALL).title("Instructions"));
 }

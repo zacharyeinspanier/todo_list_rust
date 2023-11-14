@@ -1,48 +1,28 @@
-Display List of all lists 
-    Allow user to click the lists
 
-Dsiply selected lists  
-    Allow user to click item and cross off
-
-
-| Todo Lists -----------------Activate List--------------------
-| List 1  (Activate)         |  Item 1  (clickable)
-| List 1                     |  Item 1
-| List 1                     |  Item 1
-| List 1                     |  Item 1
-| List 1                     |  Item 1
-| List 1                     |  Item 1
-| List 1                     |  Item 1
-
-Button: New List              Button Delete item
-Button Delete List            Delete all items
-
-App will control tabs
-use home tab to control adding new lists
-use tab for list: https://github.com/fdehau/tui-rs/blob/v0.19.0/examples/tabs.rs
-List will control lists
-use input for adding: https://github.com/fdehau/tui-rs/blob/v0.19.0/examples/user_input.rs
-navagate list itmes with keys, press enter to complete list. Press delete to remove
-include delete list option at bottom of list
-footer for instructions
+in progress:
+    Create instructions page
 
 
 
-tabs
-input or list + input
-Delete options
-Footer with explication
-Home:
-    input Allowing user to create list with name entered
+Backlog:
+    Strings being coppied should instead be use as reference( what should be String and what &str)
+    delete lists
+    navigate list up and down arrow keys
+    delete list itmes delete/backspce + using arrow keys
+    check off itmes enter + arrow keys
+    
+    login
+    database to store data
 
-tab n:
-    list widget allowing user to navigate list
 
-
-files
-
-main  
-app folder
-    ui this will render all items
-    home_tab return the home draw
-    list_tab return the list draw
+Complete:
+Store data differently, instead of having titles and todolist combine them
+        Work:
+        1: DONE Tab Type will be used to specify which input is being used
+        2: DONE Keys will need to access the two input boxes
+        3: DONEInput 1 will add a new todo list, input 2 will add a new todo Item to the active list
+        4: DONE put curser into correct position
+        5: DONERemove titles from state
+        6: DONETwo lists will be rendered
+            1: loop through todolists.name
+            2: loop through todolists[index].item_name

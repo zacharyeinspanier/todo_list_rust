@@ -17,7 +17,7 @@ mod render;
 use crate::render::render_ui;
 
 mod appstate;
-use crate::appstate::appstate::{State, InputMode, TabType};
+use crate::appstate::appstate::{State, InputMode, InputBox};
 
 mod todo;
 use crate::todo::todo::{TodoList, TodoItem};
@@ -55,50 +55,43 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut state: State) -> io::Resu
     loop {
         terminal.draw(|f| render_ui(f, &state))?;
 
+        // key code will be use to set the InputBox
+
         if let Event::Key(key) = event::read()? {
             match state.input_mode {
                 InputMode::Normal => match key.code {
                     KeyCode::Char('q') => {return Ok(())},
-                    KeyCode::Right => {
-                        state.next();
-                        // update tab type
-                        if state.index as i32 == 0{
-                            state.tab_type = TabType::Home;
-                        }
-                        else{
-                            state.tab_type = TabType::ListSelected;
-                        }
+                    KeyCode::Right => {state.next_tab();},
+                    KeyCode::Left => {state.previous_tab();},
+                    KeyCode::Char('e') => {
+                        state.input_box = InputBox::AddList;
+                        state.input_mode = InputMode::Editing;
                     },
-                    KeyCode::Left => {
-                        state.previous();
-                        // update tab type
-                        if state.index as i32 == 0{
-                            state.tab_type = TabType::Home;
-                        }
-                        else{
-                            state.tab_type = TabType::ListSelected;
-                        }
+                    KeyCode::Char('i') => {
+                        state.input_box = InputBox::AddItem;
+                        state.input_mode = InputMode::Editing
                     },
-                    KeyCode::Char('e') => {state.input_mode = InputMode::Editing},
                     _ => {}
                 },
                 InputMode::Editing => match key.code {
                     KeyCode::Esc => {state.input_mode = InputMode::Normal;}
-                    KeyCode::Char(c) => {state.input.push(c);}
-                    KeyCode::Backspace => {state.input.pop();}
+                    KeyCode::Char(c) => {
+                        match state.input_box{
+                            InputBox::AddList =>{state.input_list.push(c);},
+                            InputBox::AddItem =>{state.input_item.push(c);},
+                        } 
+                    }
+                    KeyCode::Backspace => {
+                        match state.input_box{
+                            InputBox::AddList =>{state.input_list.pop();},
+                            InputBox::AddItem =>{state.input_item.pop();},
+                        } 
+                    }
                     KeyCode::Enter => {
-                        // match on tab type
-                        match state.tab_type{
-                            TabType::Home =>{
-                                state.update_titles()
-                            },
-                            TabType::ListSelected =>{
-                                // new itme
-                                let item_name:String = state.input.drain(..).collect();
-                                state.todo_lists[state.index-1].add(item_name);
-                            },
-                        }
-                        
+                        match state.input_box{
+                            InputBox::AddList =>{state.add_list();},
+                            InputBox::AddItem =>{state.add_item();},
+                        } 
                     }
                     _ => {}
 
