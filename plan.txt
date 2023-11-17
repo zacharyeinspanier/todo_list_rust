@@ -1,18 +1,59 @@
 
 in progress:
-    Create instructions page
+    navigate list up and down arrow keys
+    delete lists
+    delete list itmes delete/backspce + using arrow keys
+        Option 1:
+            Tab: delete list
+            Delete: delete List item
+            up &down: nav list items
+            w & s: nav lists
+        Option 2: 
+            use keys to select list or items:
+            1: select lists
+            0: select items
+            up & down: nav selected list
+            enter: check item off
+            delte: delte item or list
+
+            I could have 3 modes:
+            ActionState
+                input -> add:
+                    right and left to select the input boxes
+                    esc default
+                    enter to add
+
+                nav -> remove and check off:
+                    esc to default
+                    right and left to select list
+                    up and dow to change selection
+                    delete to delete
+                    return to check off
+                display -> change tabs:
+                    right and Left
+                    q to quit
+                    1 capture input
+                    2 navigate
+
+                
+        Option 3:
+            use tabs to select list:
+            delte: deletes a list
+            s: select list item
+                delete: delete list item
+        
 
 
 
 Backlog:
-    Strings being coppied should instead be use as reference( what should be String and what &str)
-    delete lists
-    navigate list up and down arrow keys
-    delete list itmes delete/backspce + using arrow keys
+    
+    
     check off itmes enter + arrow keys
     
     login
     database to store data
+    Make instructions better(have first time be tutorial)
+    Strings being coppied should instead be use as reference( what should be String and what &str)
 
 
 Complete:
@@ -26,3 +67,5 @@ Store data differently, instead of having titles and todolist combine them
         6: DONETwo lists will be rendered
             1: loop through todolists.name
             2: loop through todolists[index].item_name
+Create instructions page
+encapsulation

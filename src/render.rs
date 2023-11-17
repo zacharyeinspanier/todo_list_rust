@@ -6,7 +6,7 @@ use crossterm::{
 use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
-    layout::{Constraint, Direction, Layout, Rect},
+    layout::{Constraint, Direction, Layout, Rect, Alignment},
     style::{Color, Modifier, Style},
     text::{Span, Spans, Text},
     widgets::{Block, Borders, Tabs, Paragraph, List, ListItem},
@@ -14,7 +14,8 @@ use tui::{
 };
 use unicode_width::UnicodeWidthStr;
 
-use crate::appstate::appstate::{State, InputMode, InputBox};
+use crate::appstate::appstate::State;
+use tui::widgets::Wrap;
 
 enum DrawList{
     AllLists,
@@ -22,7 +23,7 @@ enum DrawList{
 }
 
 
-pub fn render_ui<B: Backend>(f: &mut Frame<B>, state: &State) {
+pub fn render_ui<B: Backend>(f: &mut Frame<B>, state: &mut State) {
     let size = f.size();
     //println!("{:?}", size);
     let chunks = Layout::default()
@@ -48,7 +49,7 @@ pub fn render_ui<B: Backend>(f: &mut Frame<B>, state: &State) {
 
     draw_list_display(f, state, chunks[1]);
 
-    let footer = draw_footer(state);
+    let footer = draw_footer();
     f.render_widget(footer, chunks[2]);
 }
 
@@ -63,17 +64,17 @@ fn draw_tabs(state: &State) -> Tabs{
         .collect();
 
         return Tabs::new(todo_names)
-        .block(Block::default().borders(Borders::ALL).title("Tabs"))
-        .select(state.index)
-        .style(Style::default().fg(Color::Cyan))
-        .highlight_style(
-            Style::default()
-                .add_modifier(Modifier::BOLD)
-                .bg(Color::Black),
-        );
+            .block(Block::default().borders(Borders::ALL).title("Tabs"))
+            .select(state.index)
+            .style(Style::default().fg(Color::Cyan))
+            .highlight_style(
+                Style::default()
+                    .add_modifier(Modifier::BOLD)
+                    .bg(Color::Black),
+            );
 }
 
-fn draw_list_display<B: Backend>(f: &mut Frame<B>, state: &State, size: Rect){
+fn draw_list_display<B: Backend>(f: &mut Frame<B>, state: &mut State, size: Rect){
 
     let list_input_chunks= Layout::default()
         .direction(Direction::Horizontal)
@@ -85,25 +86,20 @@ fn draw_list_display<B: Backend>(f: &mut Frame<B>, state: &State, size: Rect){
             .as_ref())
         .split(size);
         
-        let all_list_chunk:Vec<Rect> = draw_list_input_box(f, state, list_input_chunks[0], DrawList::AllLists);
-        let item_list_chunk: Vec<Rect> = draw_list_input_box(f, state, list_input_chunks[1], DrawList::ListItems);
+        let all_list_chunk:Vec<Rect> = draw_list_input_box(f,  state, list_input_chunks[0], DrawList::AllLists);
+        let item_list_chunk: Vec<Rect> = draw_list_input_box(f,  state, list_input_chunks[1], DrawList::ListItems);
 
-        match state.input_mode{
-            InputMode::Normal=>{},
-            InputMode::Editing=>{
-                match state.input_box{
-                    InputBox::AddList=>{
-                        f.set_cursor(all_list_chunk[1].x + state.input_list.width() as u16 + 1, all_list_chunk[1].y+1);
-                    },
-                    InputBox::AddItem=>{
-                        f.set_cursor(item_list_chunk[1].x + state.input_item.width() as u16 + 1, item_list_chunk[1].y+1);
-                    },
-                }
-            },
+
+        if state.input_box_list(){
+            f.set_cursor(all_list_chunk[1].x + state.input_list.width() as u16 + 1, all_list_chunk[1].y+1);
         }
+        else if state.input_box_item(){
+            f.set_cursor(item_list_chunk[1].x + state.input_item.width() as u16 + 1, item_list_chunk[1].y+1);
+        }
+
 }
 
-fn draw_list_input_box<B: Backend>(f: &mut Frame<B>, state: &State, size: Rect, draw_type: DrawList) -> Vec<Rect>{
+fn draw_list_input_box<B: Backend>(f: &mut Frame<B>, state: &mut State, size: Rect, draw_type: DrawList) -> Vec<Rect>{
     let list_input_chunk = Layout::default()
         .direction(Direction::Vertical)
         .constraints(
@@ -129,7 +125,6 @@ fn draw_list_input_box<B: Backend>(f: &mut Frame<B>, state: &State, size: Rect, 
             let input = draw_input_item_name(state);
             f.render_widget(input, list_input_chunk[1]);
         },
-        _ => {},
     }
 
     return list_input_chunk;
@@ -156,7 +151,13 @@ fn draw_list_todo_items(state: &State) -> List{
         .enumerate()    
         .map(|(i, m)| {
             let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.item_name)))];
-            ListItem::new(content)
+            if state.item_selected() && i == state.item_index{
+                ListItem::new(content).style(Style::default().fg(Color::Red).bg(Color::Blue))
+            }
+            else{
+                ListItem::new(content)
+            }
+            
         })
         .collect();
 
@@ -180,7 +181,14 @@ fn draw_list_todo_lists(state: &State) -> List{
         .enumerate()    
         .map(|(i, m)| {
             let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.name)))];
-            ListItem::new(content)
+            if state.list_selected() && i == state.list_index{
+                ListItem::new(content).style(Style::default().fg(Color::Red).bg(Color::Blue))
+            }
+            else{
+                ListItem::new(content)
+            }
+            
+            
         })
     .collect();
 
@@ -196,10 +204,10 @@ fn draw_list_todo_lists(state: &State) -> List{
 
 }
 
-fn draw_footer(state: &State)-> Paragraph{
+fn draw_footer()-> Paragraph<'static>{
 
     let mut text = Text::from(Spans::from(vec![
-        Span::raw("Press e to enter name for list. Press ENTER to create the list.\n"),
+        Span::raw("Press e to enter name for list. Press ENTER to create the list."),
         Span::raw("Press i to enter item for your list. Press ENTER to add the item.\n"),
         Span::raw("Press esc to end input\n"),
         Span::raw("\nUse Arrow keys (left, right) to navigate tabs thus selecting list.\n"),
@@ -208,5 +216,6 @@ fn draw_footer(state: &State)-> Paragraph{
     text.patch_style(Style::default());
 
     return Paragraph::new(text)
-        .block(Block::default().borders(Borders::ALL).title("Instructions"));
+        .block(Block::default().borders(Borders::ALL).title("Instructions"))
+        .wrap(Wrap { trim: true });
 }
