@@ -1,16 +1,10 @@
-use crossterm::{
-    event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-};
-use std::{error::Error, io};
 use tui::{
-    backend::{Backend, CrosstermBackend},
-    layout::{Constraint, Direction, Layout, Rect, Alignment},
+    backend::Backend,
+    layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Span, Spans, Text},
     widgets::{Block, Borders, Tabs, Paragraph, List, ListItem},
-    Frame, Terminal,
+    Frame,
 };
 use unicode_width::UnicodeWidthStr;
 
@@ -59,7 +53,7 @@ fn draw_tabs(state: &State) -> Tabs{
         .todo_lists
         .iter()
         .map(|t| {
-            Spans::from(Span::styled(&t.name, Style::default().fg(Color::Green)))
+            Spans::from(Span::styled(t.get_name(), Style::default().fg(Color::Green)))
         })
         .collect();
 
@@ -150,7 +144,7 @@ fn draw_list_todo_items(state: &State) -> List{
         .iter()
         .enumerate()    
         .map(|(i, m)| {
-            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.item_name)))];
+            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.get_item_name())))];
             if state.item_selected() && i == state.item_index{
                 ListItem::new(content).style(Style::default().fg(Color::Red).bg(Color::Blue))
             }
@@ -180,7 +174,7 @@ fn draw_list_todo_lists(state: &State) -> List{
         .iter()
         .enumerate()    
         .map(|(i, m)| {
-            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.name)))];
+            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.get_name())))];
             if state.list_selected() && i == state.list_index{
                 ListItem::new(content).style(Style::default().fg(Color::Red).bg(Color::Blue))
             }

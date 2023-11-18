@@ -1,3 +1,8 @@
+mod render;
+mod todo;
+mod todo_item;
+mod appstate;
+
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
     execute,
@@ -6,21 +11,11 @@ use crossterm::{
 use std::{error::Error, io};
 use tui::{
     backend::{Backend, CrosstermBackend},
-    layout::{Constraint, Direction, Layout},
-    style::{Color, Modifier, Style},
-    text::{Span, Spans},
-    widgets::{Block, Borders, Tabs},
-    Frame, Terminal,
+    Terminal,
 };
-
-mod render;
 use crate::render::render_ui;
-
-mod appstate;
 use crate::appstate::appstate::{State, ActionState};
 
-mod todo;
-use crate::todo::todo::{TodoList, TodoItem};
 
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -64,8 +59,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut state: State) -> io::Resu
                     KeyCode::Right => {state.next_tab();},
                     KeyCode::Left => {state.previous_tab();},
                     KeyCode::Esc => {state.defalut_state();},
-                    KeyCode::Char('1') => {state.capture_input_State()},
-                    KeyCode::Char('2') => {state.navigate_State()},
+                    KeyCode::Char('1') => {state.capture_input_state()},
+                    KeyCode::Char('2') => {state.navigate_state()},
                     KeyCode::Char('q') => {return Ok(())},
                     _ => {},
                 },
@@ -84,8 +79,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut state: State) -> io::Resu
                     KeyCode::Right => {state.left_right_key();},
                     KeyCode::Up => {state.previous_list_item();},
                     KeyCode::Down => {state.next_list_item();},
-                    //KeyCode::Backspace => {},
-                    //KeyCode::Enter => {}
+                    KeyCode::Backspace => {state.delete();},
+                    KeyCode::Enter => {state.check_off();}
                     _ => {},
                 },
             }
@@ -93,10 +88,4 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut state: State) -> io::Resu
     }
 }
 
-
-
-//Backspace
-//Enter
-//Delete
-//Tab
 
