@@ -2,6 +2,8 @@ mod render;
 mod todo;
 mod todo_item;
 mod appstate;
+mod database;
+mod user;
 
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
@@ -15,10 +17,42 @@ use tui::{
 };
 use crate::render::render_ui;
 use crate::appstate::appstate::{State, ActionState};
+use crate::database::database::{TodoDatabase, QueryUser};
+use rusqlite::{params, Connection, Result};
+use crate::user::user::User;
+
+
 
 
 
 fn main() -> Result<(), Box<dyn Error>> {
+    // create database_manager
+    // user login
+        // create user
+    // database_manager.load_data
+    // create state(user, data, database_manager)
+    // start app
+
+    //option 2
+    // load data is in main.rs
+
+
+
+    let connection = Connection::open("database/data.db")?;
+    let our_db = TodoDatabase::new(String::from("ddatabase/data.db"), connection);
+    
+    // build 
+    our_db.build_db()?;
+
+    // user
+    let mut user_query: Vec<QueryUser> = match our_db.get_user_id("user1", "1235"){
+        Ok(res) =>{res},
+        Err(err) => {panic!("{}", err);}
+    };
+  
+    
+    let current_user = User::user_login(user_query[0].user_id, user_query[0].username.clone(), user_query[0].password.clone());
+
     // setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -27,7 +61,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut terminal = Terminal::new(backend)?;
 
     // create app and run it
-    let state = State::new();
+    let state = State::new(false, current_user, our_db);
     let res = run_app(&mut terminal, state);
 
     // restore terminal

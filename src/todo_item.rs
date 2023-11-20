@@ -1,6 +1,8 @@
 pub mod todo_item{
+    
     pub struct TodoItem{
         item_name: String,
+        item_id: u32,
         date_created: String,
         date_complete: String,
         complete: bool,
@@ -8,13 +10,24 @@ pub mod todo_item{
     impl TodoItem{
 
 
-        pub fn new(item_name: String) -> TodoItem{
-            let date_created = chrono::offset::Local::now().to_string(); 
+        pub fn new(item_name: String, item_id: u32, date_created: String) -> TodoItem{
+            //let date_created = chrono::offset::Local::now().to_string(); 
             TodoItem{
                 item_name, 
+                item_id,
                 date_created, 
                 date_complete: String::from(""), 
                 complete: false,
+            }
+        }
+
+        pub fn new_from_load(item_name: String, item_id: u32, date_created: String, date_complete: String, complete: bool) -> TodoItem{ 
+            TodoItem{
+                item_name, 
+                item_id,
+                date_created, 
+                date_complete, 
+                complete,
             }
         }
         /*
@@ -47,6 +60,9 @@ pub mod todo_item{
         }
         pub fn get_complete(&self) -> bool{
             return self.complete;
+        }
+        pub fn get_item_id(&self)->u32{
+            return self.item_id;
         }
 
     }

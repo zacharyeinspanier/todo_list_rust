@@ -1,5 +1,16 @@
 
 in progress:
+    database to store data
+        generating keys
+
+
+       
+        
+
+
+
+Backlog:
+
     have fewer index items
     Now I have 3:
         tab_index
@@ -8,20 +19,14 @@ in progress:
 
         I could remove tabs
         when navigating the selected list will be display on the right
-
-        Make instructions better(have first time be tutorial)
-
-       
-        
-
-
-
-Backlog:
-    scrollabel list
-    display cross offed item
-    login
-    database to store data
     
+    scrollabel list:
+        remove the top add next
+        remove the bottom add the top
+
+        I need to know which items are being displayed
+
+    login
     Strings being coppied should instead be use as reference( what should be String and what &str)
 
 
@@ -43,4 +48,31 @@ delete lists
 delete list itmes delete/backspce + using arrow keys
 check off itmes enter + arrow keys
 encapsulate todolist
+Make instructions better(have first time be tutorial)
+display cross offed item
 
+
+
+TUtorial:
+ let mut controls = TodoList::new(String::from("Controls"), 0);
+            controls.add(String::from("Use left and right arrow keys to navigate tabs"), 0);
+            controls.add(String::from("Press 1 to add a todo list or todo item."), 1);
+            controls.add(String::from("Press esc to return to tab navigate."), 2);
+            controls.add(String::from("Press 2 to and use arrow keys navigate list and items"), 3);
+            controls.add(String::from("Press backspace to remove a list or time."), 4);
+            controls.add(String::from("Press enter to cross off an item"), 5);
+
+            let mut tutorial = TodoList::new(String::from("Tutorial"), 1);
+            tutorial.add(String::from("Step 1: press 2"), 0);
+            tutorial.add(String::from("Step 2: use arrow kesy to navigate to step 3."), 1);
+            tutorial.add(String::from("Step 3: press enter to cross me off!"), 2);
+            tutorial.add(String::from("Step 4: use arrow kesy to navigate to step 5."), 3);
+            tutorial.add(String::from("Step 5: press backspcae to delete me!"), 4);
+            tutorial.add(String::from("Step 6: Press esc, then press 1"), 5);
+            tutorial.add(String::from("Step 7: use right arrow key to enter Item Input."), 6);
+            tutorial.add(String::from("Step 8: type something and press enter"), 7);
+            tutorial.add(String::from("Step 9: press esc, then press 2"), 8);
+            tutorial.add(String::from("Step 10: use arrow keys to navigate to Delete Me list"), 9);
+            tutorial.add(String::from("Step 11: press space to delete the list"), 10);
+            tutorial.add(String::from("Totorial over!"));
+            let delete_me = TodoList::new(String::from("Delete Me!"), 2);

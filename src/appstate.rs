@@ -2,6 +2,9 @@
 
 pub mod appstate{
     use crate::todo::todo::TodoList;
+    use crate::user::user::User;
+    use crate::database::database::TodoDatabase;
+    use rand;
 
     #[derive(PartialEq)]
     enum InputBox{
@@ -23,6 +26,8 @@ pub mod appstate{
     }
 
     pub struct State {
+        pub user: User,
+        pub database: TodoDatabase,
         pub todo_lists: Vec<TodoList>,
         pub index: usize,
         pub input_list: String,
@@ -35,31 +40,13 @@ pub mod appstate{
 
     }
     impl State{
-        pub fn new() -> State {
-            let mut controls = TodoList::new(String::from("Controls"));
-            controls.add(String::from("Use left and right arrow keys to navigate tabs"));
-            controls.add(String::from("Press 1 to add a todo list or todo item."));
-            controls.add(String::from("Press esc to return to tab navigate."));
-            controls.add(String::from("Press 2 to and use arrow keys navigate list and items"));
-            controls.add(String::from("Press backspace to remove a list or time."));
-            controls.add(String::from("Press enter to cross off an item"));
-
-            let mut tutorial = TodoList::new(String::from("Tutorial"));
-            tutorial.add(String::from("Step 1: press 2"));
-            tutorial.add(String::from("Step 2: use arrow kesy to navigate to step 3."));
-            tutorial.add(String::from("Step 3: press enter to cross me off!"));
-            tutorial.add(String::from("Step 4: use arrow kesy to navigate to step 5."));
-            tutorial.add(String::from("Step 5: press backspcae to delete me!"));
-            tutorial.add(String::from("Step 6: Press esc, then press 1"));
-            tutorial.add(String::from("Step 7: use right arrow key to enter Item Input."));
-            tutorial.add(String::from("Step 8: type something and press enter"));
-            tutorial.add(String::from("Step 9: press esc, then press 2"));
-            tutorial.add(String::from("Step 10: use arrow keys to navigate to Delete Me list"));
-            tutorial.add(String::from("Step 11: press space to delete the list"));
-            tutorial.add(String::from("Totorial over!"));
-            let delete_me = TodoList::new(String::from("Delete Me!"));
+        pub fn new(tutorial: bool, user: User, database: TodoDatabase) -> State {
+            // load user data
+            let mut user_data: Vec<TodoList> = database.load_user_data(user.get_user_id());
             State {
-                todo_lists: vec![controls, tutorial, delete_me],
+                user,
+                database,
+                todo_lists: user_data,
                 index: 0,
                 list_index: 0,
                 item_index: 0,
@@ -73,16 +60,58 @@ pub mod appstate{
 
         pub fn add(&mut self){
             match self.input_box{
-                InputBox::AddList =>{self.add_list();},
-                InputBox::AddItem =>{self.add_item();},
+                InputBox::AddList =>{
+                    self.add_list();
+                },
+                InputBox::AddItem =>{
+                    self.add_item();
+                },
                 _ => {},
             } 
         }
 
+        pub fn add_list(&mut self){
+            let list_name: String = self.get_input();
+            if list_name != String::from(""){
+                let mut list_id: u32 = 0;
+                loop{
+                    list_id = rand::random::<u32>();
+                    match self.database.insert_into_list(list_name.clone(), list_id, self.user.get_user_id()){
+                        Ok(res)=>{break;},
+                        Err(err)=>{continue;},
+                    };
+                }
+                self.todo_lists.push(TodoList::new(list_name, list_id));
+                
+            }
+        }
+        pub fn add_item(&mut self){
+            let item_name: String = self.get_input();
+            if item_name != String::from(""){
+                let mut item_id: u32 = 0;
+                let list_id = self.todo_lists[self.index].get_list_id();
+                let date_created = chrono::offset::Local::now().to_string();
+
+                loop{
+                    item_id = rand::random::<u32>();
+                    match self.database.insert_into_items(item_name.clone(), item_id, list_id, date_created.clone(), String::from(""), 0){
+                        Ok(res)=>{break;},
+                        Err(err) =>{continue;}, // could have error message
+                    };
+
+                }
+                self.todo_lists[self.index].add(item_name, item_id, date_created);
+            }
+        }
+
         pub fn delete(&mut self){
             match self.selected_list{
-                SelectedList::List=>{self.delete_list();},
-                SelectedList::Items=>{self.delete_item();},
+                SelectedList::List=>{
+                    self.delete_list();
+                },
+                SelectedList::Items=>{
+                    self.delete_item();
+                },
                 _ =>{},
 
             }
@@ -93,8 +122,16 @@ pub mod appstate{
             let n: usize = self.todo_lists.len();
             // only one list
             if n > 0{
-                self.todo_lists[self.list_index].delete_list_items();
+                let list_id = self.todo_lists[self.list_index].get_list_id();
+                let remove_res = self.todo_lists[self.list_index].delete_list_items();
                 self.todo_lists.remove(self.list_index);
+
+                if remove_res{
+                    match self.database.remove_list(list_id, self.user.get_user_id()){
+                        Ok(()) =>{},
+                        Err(err) =>{println!("{}", err)},
+                    };
+                }
 
                  // if the item removed is at the smae index as selected
                 if self.index >= self.list_index {
@@ -112,18 +149,28 @@ pub mod appstate{
             let n: usize = self.todo_lists[self.index].get_list_len();
 
             if n > 0{
-                self.todo_lists[self.index].remove_index(self.item_index);
+                let item_id = self.todo_lists[self.index].list[self.item_index].get_item_id();
+                let remove_res = self.todo_lists[self.index].remove_index(self.item_index);
+
+                if remove_res{
+                    match self.database.remove_item(item_id, self.todo_lists[self.index].get_list_id()){
+                        Ok(()) =>{},
+                        Err(err) =>{},
+                    };
+                }
                 // set previous if last index in list removed
                 if n-1 > 0 && n-1 == self.item_index{
                     self.previous_list_item();
                 } 
-            } 
+            }
+             // if successful remove from db 
         }
 
         pub fn check_off(&mut self){
             if self.selected_list == SelectedList::Items{
                 self.todo_lists[self.index].item_complete_index(self.item_index);
             }
+            // update db
         }
 
 
@@ -136,19 +183,7 @@ pub mod appstate{
             } 
         }
 
-        pub fn add_list(&mut self){
-            let list_name: String = self.get_input();
-            if list_name != String::from(""){
-                self.todo_lists.push(TodoList::new(list_name));
-            }
-            
-        }
-        pub fn add_item(&mut self){
-            let item_name: String = self.get_input();
-            if item_name != String::from(""){
-                self.todo_lists[self.index].add(item_name);
-            }
-        }
+       
 
         pub fn defalut_state(&mut self){
             self.selected_list = SelectedList::Default;
@@ -289,6 +324,10 @@ pub mod appstate{
             if self.index < self.todo_lists.len()-1{
                 self.index +=1;
             }
+            else if self.todo_lists.len() == 0{
+                self.index = 0;
+
+            }
             else{
                 self.index = 0;
             }
@@ -297,7 +336,12 @@ pub mod appstate{
         pub fn previous_tab(&mut self) {
             if self.index > 0 {
                 self.index -= 1;
-            } else {
+            }
+            else if self.todo_lists.len() == 0{
+                self.index = 0;
+
+            }
+             else {
                 self.index = self.todo_lists.len() - 1;
             }
         }        

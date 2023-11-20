@@ -138,32 +138,44 @@ fn draw_input_item_name(state: &State) -> Paragraph{
 
 fn draw_list_todo_items(state: &State) -> List{
 
-    let items: Vec<ListItem> = state
-        .todo_lists[state.index]
-        .list
-        .iter()
-        .enumerate()    
-        .map(|(i, m)| {
-            let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.get_item_name())))];
-            if state.item_selected() && i == state.item_index{
-                ListItem::new(content).style(Style::default().fg(Color::Red).bg(Color::Blue))
-            }
-            else{
-                ListItem::new(content)
-            }
-            
-        })
-        .collect();
+    let items: Vec<ListItem>;
+
+    if state.todo_lists.len() == 0{
+        items = Vec::new();
+    }
+    else{
+        items = state
+            .todo_lists[state.index]
+            .list
+            .iter()
+            .enumerate()    
+            .map(|(i, m)| {
+                let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.get_item_name())))];
+                if state.item_selected() && i == state.item_index{
+                    if m.get_complete(){
+                        ListItem::new(content).style(Style::default().fg(Color::Red).bg(Color::Blue).add_modifier(Modifier::CROSSED_OUT))
+                    }
+                    else{
+                        ListItem::new(content).style(Style::default().fg(Color::Red).bg(Color::Blue))
+                    }
+                }
+                else if m.get_complete(){
+                    ListItem::new(content).style(Style::default().add_modifier(Modifier::CROSSED_OUT))
+                }
+                else{
+                    ListItem::new(content)
+                }
+                
+            })
+            .collect();
+    }
 
     // set title 
     return List::new(items)
         .block(Block::default().borders(Borders::ALL).title("List Items"))
-        .highlight_style(
+        .style(
             Style::default()
-                .bg(Color::LightGreen)
-                .add_modifier(Modifier::BOLD),
-        )
-        .highlight_symbol(">> ");
+        );
 
 }
 
@@ -176,7 +188,7 @@ fn draw_list_todo_lists(state: &State) -> List{
         .map(|(i, m)| {
             let content = vec![Spans::from(Span::raw(format!("{}: {}", i, m.get_name())))];
             if state.list_selected() && i == state.list_index{
-                ListItem::new(content).style(Style::default().fg(Color::Red).bg(Color::Blue))
+                ListItem::new(content).style(Style::default().fg(Color::Red).bg(Color::Blue),)
             }
             else{
                 ListItem::new(content)
@@ -189,12 +201,9 @@ fn draw_list_todo_lists(state: &State) -> List{
     // set title 
     return List::new(all_lists)
     .block(Block::default().borders(Borders::ALL).title("All Lists"))
-    .highlight_style(
+    .style(
         Style::default()
-            .bg(Color::LightGreen)
-            .add_modifier(Modifier::BOLD),
-    )
-    .highlight_symbol(">> ");
+    );
 
 }
 

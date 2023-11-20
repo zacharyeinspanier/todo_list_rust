@@ -4,14 +4,16 @@ pub mod todo{
 
     pub struct TodoList{
         name: String,
+        list_id: u32,
         pub list: Vec<TodoItem>,
     }
 
     impl TodoList{
 
-        pub fn new(list_name: String) ->TodoList{
+        pub fn new(list_name: String, list_id: u32) ->TodoList{
             TodoList{
                 name: list_name,
+                list_id,
                 list: Vec::new(),
             }
         }
@@ -20,14 +22,8 @@ pub mod todo{
             Pram: string, name of TodoItem to create
             Return: bool, true if itme is added to list; flase otherwise
         */
-        pub fn add(&mut self, item_name: String) -> bool{
-            // Check for duplicates; Not allowed
-            let res: i32 = self.get_item_by_name(&item_name);
-            if res != -1 {
-                return false;
-            }
-        
-            self.list.push(TodoItem::new(item_name));
+        pub fn add(&mut self, item_name: String, item_id: u32, date_created: String) -> bool{        
+            self.list.push(TodoItem::new(item_name, item_id, date_created));
             return true;
         }
 
@@ -61,19 +57,6 @@ pub mod todo{
             return self.list[index].get_complete();
         }
 
-        /*
-            Get complete status from todo list using index
-            Pram: i32, index of the TodoItem in the list
-            Return: bool, true if TodoItem is complete; flase otherwise
-        */
-        pub fn get_complete_status(&mut self, index: usize) -> bool{
-            // Check valid index
-            if index >= self.list.len(){
-                return false;
-            }
-            // Status
-            return self.list[index].get_complete();
-        }
        
         /*
             Delete all TodoItems from a list
@@ -115,6 +98,9 @@ pub mod todo{
 
         pub fn get_name(&self)->String{
             return self.name.clone();
+        }
+        pub fn get_list_id(&self) ->u32{
+            return self.list_id;
         }
     }
 }
