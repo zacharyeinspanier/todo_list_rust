@@ -2,6 +2,14 @@ pub mod todo{
 
     use crate::todo_item::todo_item::TodoItem;
 
+    /*
+        The structure for TodoList
+
+        Members:
+            name: String the name of the list
+            list_id: u32 uniquly identify the todolist
+            List: Vec of TodoItems, all items in the todo list
+    */
     pub struct TodoList{
         name: String,
         list_id: u32,
@@ -10,6 +18,13 @@ pub mod todo{
 
     impl TodoList{
 
+        /*
+            Pram:
+                list_name: String name of the todo list
+                list_id: u32 used to uniquly identify the todolist
+                
+            Return: a new TodoList Struct
+        */
         pub fn new(list_name: String, list_id: u32) ->TodoList{
             TodoList{
                 name: list_name,
@@ -17,6 +32,7 @@ pub mod todo{
                 list: Vec::new(),
             }
         }
+        
         /*
             Add to the todo list
             Pram: string, name of TodoItem to create
@@ -47,17 +63,24 @@ pub mod todo{
             Pram: i32, index of TodoItem to mark complete
             Return: bool, true if item is marked complete; false otherwise
         */
-        pub fn item_complete_index(&mut self, index: usize) ->bool{
+        pub fn set_item_complete(&mut self, index: usize, date_complete: String) ->bool{
             // Check valid index
             if index >= self.list.len(){
                 return false;
             }
+
             self.list[index].toggle_complete();
-            // Set complete
-            return self.list[index].get_complete();
+            
+            if !self.list[index].get_complete(){
+                self.list[index].set_date_complete(String::from(""));
+            }
+            else{
+                self.list[index].set_date_complete(date_complete.clone());
+            }
+            
+            return true
         }
 
-       
         /*
             Delete all TodoItems from a list
             Return: True if all times are deleted; flase otherwise
@@ -91,16 +114,37 @@ pub mod todo{
             return -1;
         }
 
+        /*
+            Returns: usize the length of the todo list
+        */
         pub fn get_list_len(&self) -> usize{
             return self.list.len();
-
         }
-
+        /*
+            Returns: String clone of the todo list name
+        */
         pub fn get_name(&self)->String{
             return self.name.clone();
         }
+        /*
+            Returns: the todo list id
+        */
         pub fn get_list_id(&self) ->u32{
             return self.list_id;
+        }
+        /*
+            Pram: usize the item index
+            Returns: the complete status of a specific todo item in the list
+        */
+        pub fn get_item_complete_status(&self, index: usize) -> bool{
+            return self.list[index].get_complete();
+        }
+        /*
+            Pram: usize the item index
+            Returns: the item id for a specific todo item in the list
+        */
+        pub fn get_item_id(&self, index: usize) ->u32{
+            return self.list[index].get_item_id();
         }
     }
 }

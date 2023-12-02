@@ -1,33 +1,23 @@
 
 in progress:
-    database to store data
-        generating keys
-
 
        
-        
-
 
 
 Backlog:
-
+    Instructions for App
+    display todo instantly
+    Reuse database object
+    test database
+    Create tests
     have fewer index items
-    Now I have 3:
-        tab_index
-        list_index
-        item_index
-
-        I could remove tabs
-        when navigating the selected list will be display on the right
     
-    scrollabel list:
-        remove the top add next
-        remove the bottom add the top
-
-        I need to know which items are being displayed
-
-    login
+    Warnings
     Strings being coppied should instead be use as reference( what should be String and what &str)
+    
+
+
+
 
 
 Complete:
@@ -50,6 +40,36 @@ check off itmes enter + arrow keys
 encapsulate todolist
 Make instructions better(have first time be tutorial)
 display cross offed item
+database to store data
+login
+For user authentication    
+        1: setup state
+            a: set the state objects to be correct
+            b: login method
+            c: create account method
+            d: logout method
+            e: allow navigation: index, capture keys
+        2: create render
+            a: defaut page: Login or create account
+            b: create account page
+            c: login page
+  Display username
+  Display mode: navigate, or edit
+New way to select a list:
+    navigation will select a list
+useing optioin
+Display messages on authentication and app
+
+COMMENT code 
+        todo
+        todo_item
+        user
+        database
+        user_authentication
+        app_state
+        render_authentication
+        render
+        main
 
 
 
