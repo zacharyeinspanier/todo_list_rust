@@ -100,19 +100,6 @@ pub mod todo{
             }
             return true;
         }
-        /*
-            Get item from todo list using string
-            Pram: String, name of TodoItem
-            Return: i32, index of the item, -1 if not found
-        */
-        fn get_item_by_name(&self, name: &String) -> i32{
-            for (i, item) in self.list.iter().enumerate(){
-                if &item.get_item_name() == name{
-                    return i as i32;
-                }
-            }
-            return -1;
-        }
 
         /*
             Returns: usize the length of the todo list

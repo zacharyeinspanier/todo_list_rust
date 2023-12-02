@@ -1,12 +1,12 @@
 use tui::{
     backend::Backend,
-    layout::{Constraint, Direction, Layout, Rect},
-    style::{Color, Modifier, Style},
-    text::{Span, Spans, Text},
-    widgets::{Block, Borders, Tabs, Paragraph, List, ListItem},
+    layout::{Constraint, Direction, Layout},
+    style::{Color, Style},
+    text::{Spans, Text},
+    widgets::{Block, Borders, Paragraph},
     Frame,
 };
-use crate::user_authentication::user_authentication::{Authentication, AuthenticationState, SelectedChunk};
+use crate::user_authentication::user_authentication::{Authentication, SelectedChunk};
 
 /*
     This function renders the user authentication login page

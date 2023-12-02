@@ -1,18 +1,11 @@
-
 in progress:
-
-       
 
 
 Backlog:
-    Instructions for App
     display todo instantly
     Reuse database object
     test database
     Create tests
-    have fewer index items
-    
-    Warnings
     Strings being coppied should instead be use as reference( what should be String and what &str)
     
 
@@ -70,6 +63,9 @@ COMMENT code
         render_authentication
         render
         main
+have fewer index items
+Warnings
+
 
 
 

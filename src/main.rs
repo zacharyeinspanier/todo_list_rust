@@ -22,10 +22,9 @@ use tui::{
 use crate::render::render_ui;
 use render_authenitcation::render_user_authentication;
 use database::database::TodoDatabase;
-use rusqlite::{params, Connection, Result};
+use rusqlite::{Result};
 use user_authentication::user_authentication::{Authentication, AuthenticationState};
 use crate::user::user::User;
-use rand;
 
 use crate::app_state::app_state::{State, ActionState};
 
@@ -65,7 +64,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             let db = TodoDatabase::new(String::from("database/data.db"));
             // create app and run it
         
-            let state = State::new(false, user, db);
+            let state = State::new(user, db);
             let res_app = run_app(&mut terminal, state);
 
             match res_app{

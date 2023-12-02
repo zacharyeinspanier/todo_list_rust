@@ -76,6 +76,7 @@ pub mod app_state{
         pub list_index: usize,
         pub item_index: usize,
         pub action_state: ActionState,
+        pub footer_meaage: String,
         input_box: InputBox,
         selected_list: SelectedList,
 
@@ -85,15 +86,14 @@ pub mod app_state{
             This method creates a new state struct
 
             Prams:
-                tutorial: bool, true = add tutorial false = no tutorial
                 user: User, the user logged in
                 database: the database to user
 
             Returns: a state struct
         */
-        pub fn new(tutorial: bool, user: User, database: TodoDatabase) -> State {
+        pub fn new(user: User, database: TodoDatabase) -> State {
             // load user data
-            let mut user_data: Vec<TodoList> = database.load_user_data(user.get_user_id());
+            let user_data: Vec<TodoList> = database.load_user_data(user.get_user_id());
 
             State {
                 user,
@@ -103,6 +103,7 @@ pub mod app_state{
                 item_index: 0,
                 input_list: String::new(),
                 input_item: String::new(),
+                footer_meaage: String::from("Press 1 to enter input \nPress 2 to navigate\n Press q to exit app"),
                 selected_list: SelectedList::Default,
                 action_state: ActionState::Default,
                 input_box: InputBox::Default,
@@ -136,15 +137,15 @@ pub mod app_state{
 
             // empty string is not allowed
             if list_name != String::from(""){
-                let mut list_id: u32 = 0;
+                let mut list_id: u32;
                 loop{
                     // generate a random list_id
                     list_id = rand::random::<u32>();
                     if list_id == u32::MAX {continue;}
                     // insert into database, err if the list_id exists
                     match self.database.insert_into_list(list_name.clone(), list_id, self.user.get_user_id()){
-                        Ok(res)=>{break;},
-                        Err(err)=>{continue;},
+                        Ok(_res)=>{break;},
+                        Err(_err)=>{continue;},
                     };
                 }
                 // add the new list to todo_lists
@@ -162,7 +163,7 @@ pub mod app_state{
 
             // empty string is not allowed
             if item_name != String::from(""){
-                let mut item_id: u32 = 0;
+                let mut item_id: u32;
                 // get the current list_id
                 let list_id = self.todo_lists[self.list_index].get_list_id();
                 // get current date time
@@ -174,8 +175,8 @@ pub mod app_state{
                     if item_id == u32::MAX {continue;}
                     // insert item into databse, err if the item_id already exists
                     match self.database.insert_into_items(item_name.clone(), item_id, list_id, date_created.clone(), String::from(""), 0){
-                        Ok(res)=>{break;},
-                        Err(err) =>{continue;},
+                        Ok(_res)=>{break;},
+                        Err(_err) =>{continue;},
                     };
                 }
                 // add the item to the current list
@@ -277,14 +278,14 @@ pub mod app_state{
                 if self.todo_lists[self.list_index].get_item_complete_status(self.item_index){
                     match self.database.update_item(item_id, list_id, 1, date_complete){
                         Ok(()) =>{},
-                        Err(err) =>{},
+                        Err(err) =>{println!("{}", err)},
                     };
                 }
                 else{
                     // item was marked not complete
                     match self.database.update_item(item_id, list_id, 0, String::from("")){
                         Ok(()) =>{},
-                        Err(err) =>{},
+                        Err(err) =>{println!("{}", err)},
                     };
                 }
             }
@@ -312,6 +313,7 @@ pub mod app_state{
             self.action_state =  ActionState::Default;
             self.input_list.drain(..);
             self.input_item.drain(..);
+            self.footer_meaage = String::from("Press 1 to enter input. \nPress 2 to navigate.\n Press q to exit app.");
         }
 
         /*
@@ -321,7 +323,7 @@ pub mod app_state{
             self.selected_list = SelectedList::Default;
             self.input_box = InputBox::AddList; 
             self.action_state =  ActionState::CaptureInput;
-
+            self.footer_meaage = String::from("Press right or left arrow key to choose input box. \nPress enter keys and press enter to add list or item. \n Press esc return to default.");
         }
 
         /*
@@ -331,6 +333,7 @@ pub mod app_state{
             self.selected_list = SelectedList::List;
             self.input_box = InputBox::Default; 
             self.action_state =  ActionState::Navigate;
+            self.footer_meaage = String::from("Press arrow keys to navigate list \nPress enter to cross off an item. \nPress backspace/delete to remove an item or list. \nPress esc return to default.");
         }
 
         /*

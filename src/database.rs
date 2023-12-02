@@ -1,6 +1,6 @@
 pub mod database{
 
-    use rusqlite::{params, Connection, Result, Rows};
+    use rusqlite::{params, Connection, Result};
     use crate::todo::todo::TodoList;
     use crate::todo_item::todo_item::TodoItem;
 
@@ -59,7 +59,6 @@ pub mod database{
             connection: Connection to the database
     */
     pub struct TodoDatabase{
-        file_path: String,
         connection: Connection,
     }
 
@@ -80,7 +79,6 @@ pub mod database{
 
             // create TodoDatabase
             let new_db = TodoDatabase{
-                file_path,
                 connection,
             };
 
@@ -189,7 +187,7 @@ pub mod database{
             )?;
 
             // Execute the query and map results to QueryUser
-            let mut rows = qury_user_id
+            let rows = qury_user_id
                 .query_map(
                     params![username, password], |row| Ok(QueryUser{
                         user_id: row.get("user_id")?,
@@ -217,9 +215,9 @@ pub mod database{
 
             // get a vec of all list rows with user_id
             // create empty vec if user was not found
-            let mut user_lists: Vec<QueryLists> = match self.get_user_lists(user_id){
-                Err(err) =>{Vec::new()}, 
+            let user_lists: Vec<QueryLists> = match self.get_user_lists(user_id){
                 Ok(res) =>{res},
+                Err(_err) =>{Vec::new()}, 
             };
 
             // create vec of TodoLists
@@ -232,9 +230,9 @@ pub mod database{
                 let mut current_list = TodoList::new(list.list_name.clone(), list.list_id);
 
                 // query data base for all items rows with list_id
-                let mut list_items: Vec<QueryItems> = match self.get_list_items(list.list_id){
-                    Err(err) =>{Vec::new()},
+                let list_items: Vec<QueryItems> = match self.get_list_items(list.list_id){
                     Ok(res) =>{res},
+                    Err(_err) =>{Vec::new()},
                 };
 
                 // Create TodoItems for every item row 
@@ -281,7 +279,7 @@ pub mod database{
             )?;
 
             // execuet the query, map all rows to struct QueryLists
-            let mut rows = qury_list_id
+            let rows = qury_list_id
                 .query_map(
                     params![user_id], |row| Ok(QueryLists{
                         user_id: row.get("user_id")?,
@@ -318,7 +316,7 @@ pub mod database{
             )?;
 
             // execuet the query, map each row to QueryItems
-            let mut rows = qury_list_id
+            let rows = qury_list_id
                 .query_map(
                     params![list_id], |row| Ok(QueryItems{
                         item_id: row.get("item_id")?,

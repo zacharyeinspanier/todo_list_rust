@@ -108,7 +108,9 @@ pub mod user_authentication{
             // query database for the user
             let user_query: Vec<QueryUser> = match self.database.get_user_id(&username, &password){
                 Ok(res) => {res},
-                Err(err) =>{Vec::new()},
+                Err(err) =>{
+                    panic!("{}", err)
+                },
             };
 
             // only one user should be found
@@ -141,14 +143,15 @@ pub mod user_authentication{
 
             // check if a user already exists with the same username and password
             let user_query: Vec<QueryUser> = match self.database.get_user_id(&username, &password){
-                Ok(res) => {res},
-                Err(err) =>{Vec::new()}, 
+                Ok(res) => {
+                    res},
+                Err(err) =>{panic!("{}", err)}, 
             };
 
             // zero users should be found
             if user_query.len() == 0{
 
-                let mut user_id: u32 = 0;
+                let mut user_id: u32 ;
 
                 loop {
                     // generate a random user_id
@@ -157,7 +160,7 @@ pub mod user_authentication{
                     // try to create an account, err when the user_id already exists
                     match self.database.create_user_account(&username, &password, user_id){
                         Ok(()) =>{break;},
-                        Err(err) => {continue;},
+                        Err(err) => {panic!("{}", err)}, // should be user already exists
                     }
                 }
                 self.message = String::from("Account create for User: ") + &username.clone(); // success message

@@ -3,13 +3,11 @@ use tui::{
     layout::{Constraint, Direction, Layout, Rect},
     style::{Color, Modifier, Style},
     text::{Span, Spans, Text},
-    widgets::{Block, Borders, Tabs, Paragraph, List, ListItem},
+    widgets::{Block, Borders, Paragraph, List, ListItem},
     Frame,
 };
 use unicode_width::UnicodeWidthStr;
-
 use crate::app_state::app_state::State;
-use tui::widgets::Wrap;
 
 /*
     This enum is used to draw the lists and list items
@@ -59,7 +57,7 @@ pub fn render_ui<B: Backend>(f: &mut Frame<B>, state: &mut State) {
     draw_list_display(f, state, chunks[1]);
     
     // draw footer
-    let footer = draw_footer();
+    let footer = draw_footer(state);
     f.render_widget(footer, chunks[2]);
 }
 
@@ -345,18 +343,11 @@ fn draw_list_todo_lists(state: &State) -> List{
     
     Returns: Paragraph, with messages to the user
 */
-fn draw_footer()-> Paragraph<'static>{
+fn draw_footer(state: &State)-> Paragraph{
 
-    let mut text = Text::from(Spans::from(vec![
-        Span::raw("Press e to enter name for list. Press ENTER to create the list."),
-        Span::raw("Press i to enter item for your list. Press ENTER to add the item.\n"),
-        Span::raw("Press esc to end input\n"),
-        Span::raw("\nUse Arrow keys (left, right) to navigate tabs thus selecting list.\n"),
-        Span::raw("To exit app "),
-    ]));
-    text.patch_style(Style::default());
+    let mut message_text = Text::from(Spans::from(state.footer_meaage.as_ref()));
+    message_text.patch_style(Style::default());
 
-    return Paragraph::new(text)
-        .block(Block::default().borders(Borders::ALL).title("Instructions"))
-        .wrap(Wrap { trim: true });
+    return Paragraph::new(message_text)
+    .block(Block::default().borders(Borders::ALL).title("Message"));
 }
