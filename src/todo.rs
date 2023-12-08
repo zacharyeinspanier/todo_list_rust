@@ -38,8 +38,8 @@ pub mod todo{
             Pram: string, name of TodoItem to create
             Return: bool, true if itme is added to list; flase otherwise
         */
-        pub fn add(&mut self, item_name: String, item_id: u32, date_created: String) -> bool{        
-            self.list.push(TodoItem::new(item_name, item_id, date_created));
+        pub fn add(&mut self, item_name: String, item_id: u32) -> bool{        
+            self.list.push(TodoItem::new(item_name, item_id));
             return true;
         }
 
@@ -63,20 +63,13 @@ pub mod todo{
             Pram: i32, index of TodoItem to mark complete
             Return: bool, true if item is marked complete; false otherwise
         */
-        pub fn set_item_complete(&mut self, index: usize, date_complete: String) ->bool{
+        pub fn set_item_complete(&mut self, index: usize) ->bool{
             // Check valid index
             if index >= self.list.len(){
                 return false;
             }
 
             self.list[index].toggle_complete();
-            
-            if !self.list[index].get_complete(){
-                self.list[index].set_date_complete(String::from(""));
-            }
-            else{
-                self.list[index].set_date_complete(date_complete.clone());
-            }
             
             return true
         }

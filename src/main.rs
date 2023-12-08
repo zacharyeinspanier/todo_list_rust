@@ -1,12 +1,11 @@
-mod render;
-mod app_state;
+pub mod render;
+pub mod app_state;
 mod database;
 mod user;
 mod todo;
 mod todo_item;
 mod user_authentication;
 mod render_authenitcation;
-
 
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
@@ -56,23 +55,20 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(err) => {panic!("there was an error {}", err)},
     };
 
-    // run app if authentication returned User
-    match res{
-        None=>{},
-        Some(user) =>{
-            
-            let db = TodoDatabase::new(String::from("database/data.db"));
-            // create app and run it
-        
-            let state = State::new(user, db);
-            let res_app = run_app(&mut terminal, state);
+    
+    if !res.is_none(){
+        let user: User = res.unwrap();
+        let db = TodoDatabase::new(String::from("database/data.db"));
+        // create app and run it
 
-            match res_app{
-                Err(err) =>{ println!("{:?}", err);},
-               _ =>{},
-            }
-        },
-    };
+        let state = State::new(user, db);
+        let res_app = run_app(&mut terminal, state);
+
+        match res_app{
+            Err(err) =>{ println!("{:?}", err);},
+        _ =>{},
+        }
+    }
 
     // restore terminal
     disable_raw_mode()?;

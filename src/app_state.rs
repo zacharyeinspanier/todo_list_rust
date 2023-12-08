@@ -166,21 +166,19 @@ pub mod app_state{
                 let mut item_id: u32;
                 // get the current list_id
                 let list_id = self.todo_lists[self.list_index].get_list_id();
-                // get current date time
-                let date_created = chrono::offset::Local::now().to_string();
 
                 loop{
                     // generate random item_id 
                     item_id = rand::random::<u32>();
                     if item_id == u32::MAX {continue;}
                     // insert item into databse, err if the item_id already exists
-                    match self.database.insert_into_items(item_name.clone(), item_id, list_id, date_created.clone(), String::from(""), 0){
+                    match self.database.insert_into_items(item_name.clone(), item_id, list_id, 0){
                         Ok(_res)=>{break;},
                         Err(_err) =>{continue;},
                     };
                 }
                 // add the item to the current list
-                self.todo_lists[self.list_index].add(item_name, item_id, date_created);
+                self.todo_lists[self.list_index].add(item_name, item_id);
             }
         }
 
@@ -266,24 +264,23 @@ pub mod app_state{
         pub fn check_off(&mut self){
             // Only allowed on SelectedList::Items
             if self.selected_list == SelectedList::Items{
-                // get date time complete
-                let date_complete = chrono::offset::Local::now().to_string();
+
                 // set item complete
-                self.todo_lists[self.list_index].set_item_complete(self.item_index, date_complete.clone());
+                self.todo_lists[self.list_index].set_item_complete(self.item_index);
 
                 let item_id = self.todo_lists[self.list_index].get_item_id(self.item_index);
                 let list_id = self.todo_lists[self.list_index].get_list_id();
 
                 // update item complete with date and time
                 if self.todo_lists[self.list_index].get_item_complete_status(self.item_index){
-                    match self.database.update_item(item_id, list_id, 1, date_complete){
+                    match self.database.update_item(item_id, list_id, 1){
                         Ok(()) =>{},
                         Err(err) =>{println!("{}", err)},
                     };
                 }
                 else{
                     // item was marked not complete
-                    match self.database.update_item(item_id, list_id, 0, String::from("")){
+                    match self.database.update_item(item_id, list_id, 0){
                         Ok(()) =>{},
                         Err(err) =>{println!("{}", err)},
                     };

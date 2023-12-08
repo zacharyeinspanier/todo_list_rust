@@ -37,16 +37,12 @@ pub mod database{
             item_id: u32 PRIMARY KEY unique identifer for a item
             list_id: u32 FORIGEN KEY the list that owns this item
             tem_name: String the item name
-            date_created: String the date the item was created
-            date_complete: String the date the item was complete
             complete: u32 the status of complete 1 = true, 0 = false
     */
     pub struct QueryItems{
         pub item_id: u32,
         pub list_id: u32,
         pub item_name: String,
-        pub date_created: String,
-        pub date_complete: String,
         pub complete: u32,
     }
     
@@ -129,8 +125,6 @@ pub mod database{
                     item_id INTEGER PRIMARY KEY,
                     list_id INTEGER,
                     item_name TEXT,  
-                    date_created TEXT,
-                    date_complete TEXT,
                     complete INTEGER,
                     FOREIGN KEY(list_id) REFERENCES users(list_id) 
                  );",
@@ -244,8 +238,6 @@ pub mod database{
                     let current_item = TodoItem::new_from_load(
                         item.item_name.clone(), 
                         item.item_id, 
-                        item.date_created.clone(), 
-                        item.date_complete.clone(), 
                         complete_status
                     );
                     // push to current list 
@@ -322,8 +314,6 @@ pub mod database{
                         item_id: row.get("item_id")?,
                         list_id: row.get("list_id")?,
                         item_name: row.get("item_name")?,
-                        date_created: row.get("date_created")?,
-                        date_complete: row.get("date_complete")?,
                         complete: row.get("complete")?,
 
                     }
@@ -364,8 +354,6 @@ pub mod database{
                 item_name: the name of the item
                 item_id: the unique identifier for a item
                 list_id: the unique identifier for a list (list_id owns this list)
-                date_created: the date the item was created
-                date_complete: the date the item was completed
                 complete: complete status
                     1 = true, 
                     0 = false
@@ -374,18 +362,16 @@ pub mod database{
                 Ok(): the SQL commands ran without error
                 Err: there was an error while running the SQL commands, the item_id already exists in the item table
         */
-        pub fn insert_into_items(&self, item_name: String, item_id: u32, list_id: u32, date_created: String, date_complete: String, complete: u32)->  Result<(), rusqlite::Error>{
+        pub fn insert_into_items(&self, item_name: String, item_id: u32, list_id: u32, complete: u32)->  Result<(), rusqlite::Error>{
 
             self.connection.execute(
                 "INSERT INTO items (
                     item_id,
                     list_id,
                     item_name,  
-                    date_created,
-                    date_complete,
                     complete)
-                    values(?,?,?,?,?,?)",
-                params![item_id, list_id, &item_name, &date_created, &date_complete, complete]
+                    values(?,?,?,?)",
+                params![item_id, list_id, &item_name, complete]
             )?;
             Ok(())
         }
@@ -445,21 +431,20 @@ pub mod database{
                 item_id: the unique identifier for a item
                 list_id: the unique identifier for a list
                 complete: complete status, 1 = true, 0 = false
-                date_complete: the date the item was marked complete
             
             Returns: Result< Ok, Err>
                 Ok(): the SQL commands ran without error
                 Err: there was an error while running the SQL commands
         */
-        pub fn update_item(&self, item_id: u32, list_id: u32, complete: u32, date_complete: String)->  Result<(), rusqlite::Error>{
+        pub fn update_item(&self, item_id: u32, list_id: u32, complete: u32)->  Result<(), rusqlite::Error>{
 
             self.connection.execute(
                 "
                 UPDATE items 
-                SET complete = ?, date_complete = ?
+                SET complete = ?
                 WHERE item_id = ? AND list_id = ?;
                 ",
-                params![complete, date_complete, item_id, list_id]
+                params![complete, item_id, list_id]
             )?;
 
             Ok(())
