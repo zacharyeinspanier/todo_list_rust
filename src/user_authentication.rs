@@ -50,12 +50,12 @@ pub mod user_authentication{
             username: String, the username from login
             password: String, the password from login
     */
-    pub struct Authentication{
+    pub struct Authentication <'a>{
         pub authentication_state: AuthenticationState,
         pub username_input: String,
         pub password_input: String,
         pub index: u32,
-        pub database: TodoDatabase, 
+        pub database: &'a TodoDatabase, 
         pub selected_chunk: SelectedChunk, 
         pub message: String,
         max_index: u32,
@@ -65,7 +65,7 @@ pub mod user_authentication{
         
     }
 
-    impl Authentication{
+    impl Authentication <'_>{
 
         /*
             This method creats a new Authentication struct
@@ -75,7 +75,7 @@ pub mod user_authentication{
 
             Returns: Authentication struct  
         */
-        pub fn new(database: TodoDatabase)->Authentication{
+        pub fn new(database: &TodoDatabase)->Authentication{
             Authentication{
                 authentication_state: AuthenticationState::Default,
                 username_input: String::new(),
@@ -120,7 +120,7 @@ pub mod user_authentication{
                 self.username = user_query[0].username.clone();
                 self.password = user_query[0].password.clone();
                 self.authentication_state = AuthenticationState::LoggedIn;
-                self.message = String::from("User: ") + &username.clone() + &String::from(" Logged in!"); // Login message
+                self.message = String::from("User: ") + &username.clone() + &String::from(" Logged in! Press any key to proceed."); // Login message
             }
             else{
                 self.message = String::from("User: ") + &username.clone() + &String::from(" does not exist. Create an account!"); // user not found message

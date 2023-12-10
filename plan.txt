@@ -1,11 +1,12 @@
 in progress:
 
+ Reuse database object
+
 
 Backlog:
     display todo instantly
-    Reuse database object
-    test database
-    Create tests
+   
+
     Strings being coppied should instead be use as reference( what should be String and what &str)
     
 
@@ -65,6 +66,8 @@ COMMENT code
         main
 have fewer index items
 Warnings
+test database
+Create tests
 
 
 

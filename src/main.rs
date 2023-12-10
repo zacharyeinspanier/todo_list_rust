@@ -47,19 +47,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     terminal.clear()?;
 
     // create database for  Authentication
-    let our_db = TodoDatabase::new(String::from("database/data.db"));
-    let authen = Authentication::new(our_db);
+    let db = TodoDatabase::new(String::from("database/data.db"));
+    let authen = Authentication::new(&db);
     // runs the user authentication, returns Result<Option<User>, Err>
     let res: Option<User> = match run_user_authentication(&mut terminal, authen){
         Ok(option) => {option},
-        Err(err) => {panic!("there was an error {}", err)},
+        Err(err) => {panic!("No User Error: {}", err)},
     };
     
     if !res.is_none(){
         let user: User = res.unwrap();
-        let db = TodoDatabase::new(String::from("database/data.db"));
         // create app and run it
-
         let state = State::new(user, db);
         let res_app = run_app(&mut terminal, state);
 
