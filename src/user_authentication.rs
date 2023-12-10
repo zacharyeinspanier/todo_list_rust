@@ -160,7 +160,12 @@ pub mod user_authentication{
                     // try to create an account, err when the user_id already exists
                     match self.database.create_user_account(&username, &password, user_id){
                         Ok(()) =>{break;},
-                        Err(err) => {panic!("{}", err)}, // should be user already exists
+                        Err(err) => {
+                            match err.sqlite_error_code().unwrap(){
+                                rusqlite::ErrorCode::ConstraintViolation => { continue;}
+                                _ =>{panic!("{}", err)}
+                            }
+                        },
                     }
                 }
                 self.message = String::from("Account create for User: ") + &username.clone(); // success message

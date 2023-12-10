@@ -4,6 +4,19 @@ pub mod database{
     use crate::todo::todo::TodoList;
     use crate::todo_item::todo_item::TodoItem;
 
+
+    pub enum TodoDatabaseErrorCode{
+        NoUserFound,
+        ListNotFound,
+        ItemNotFound
+    }
+
+    pub struct TodoDatabaseError{
+        id: u32,
+        message: String,
+        code: TodoDatabaseErrorCode
+    }
+
     /*
         This structure stores data from a query in the users table
 
@@ -86,6 +99,10 @@ pub mod database{
 
             return new_db;
         }
+        pub fn close_connection(self)->Result<(), rusqlite::Error>{
+            self.connection.close();
+            Ok(())
+        }
 
         /*
             This Method creates all the tables for a TodoDatabase
@@ -102,8 +119,8 @@ pub mod database{
                 "CREATE TABLE IF NOT EXISTS users (
                      user_id INTEGER PRIMARY KEY,
                      username TEXT,
-                     password TEXT
-                     
+                     password TEXT,
+                     UNIQUE(username)
                  );",
                 ()
             )?;
@@ -126,7 +143,7 @@ pub mod database{
                     list_id INTEGER,
                     item_name TEXT,  
                     complete INTEGER,
-                    FOREIGN KEY(list_id) REFERENCES users(list_id) 
+                    FOREIGN KEY(list_id) REFERENCES lists(list_id) 
                  );",
                 ()
             )?;
@@ -284,6 +301,8 @@ pub mod database{
             // collect results
             let collected: Result<Vec<QueryLists>, rusqlite::Error> = rows.collect();
 
+            // ERROR Lists not found
+
             return collected;
         }
         /*
@@ -343,7 +362,7 @@ pub mod database{
                 "INSERT INTO lists (list_id, user_id, list_name) values(?, ?, ?)",
                 params![list_id, user_id, &list_name,] 
             )?;
-
+            // ERROR could not find user
             Ok(())
         }
 
@@ -373,6 +392,35 @@ pub mod database{
                     values(?,?,?,?)",
                 params![item_id, list_id, &item_name, complete]
             )?;
+            // Could not find list ID
+            Ok(())
+        }
+
+        /*
+            This method remove a user from the user table
+
+            Prams:
+                user_id: the unique identifier for a user
+             
+            Returns: Result< Ok, Err>
+                Ok(): the SQL commands ran without error
+                Err: there was an error while running the SQL commands
+        */
+        pub fn remove_user(&self, user_id: u32) ->  Result<(), rusqlite::Error>{
+
+            // Get user lists
+            let lists: Vec<QueryLists> = self.get_user_lists(user_id).unwrap();
+            // remove all list and items
+            for list in lists{
+                self.remove_list(list.list_id, user_id);
+            }
+
+            // remove the list from list table
+            self.connection.execute(
+                "DELETE FROM users WHERE user_id = ?;",
+                params![user_id]
+            )?;
+
             Ok(())
         }
 
@@ -401,6 +449,8 @@ pub mod database{
                 params![list_id, user_id]
             )?;
 
+            // Could not find List ID, could not find user Id
+
             Ok(())
         }
 
@@ -420,7 +470,7 @@ pub mod database{
                 "DELETE FROM items WHERE list_id = ? AND item_id = ?;",
                 params![list_id, item_id]
             )?;
-
+            // Could not find List_id
             Ok(())
 
         }
@@ -447,6 +497,7 @@ pub mod database{
                 params![complete, item_id, list_id]
             )?;
 
+            // ERROR: Could not find Item ID
             Ok(())
         }
     }

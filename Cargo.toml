@@ -8,6 +8,7 @@ edition = "2021"
 [dependencies]
 chrono = "0.4.31"
 crossterm = "0.27.0"
+libsqlite3-sys = "0.27.0"
 rand = "0.8.5"
 rusqlite = "0.30.0"
 termion = "2.0.3"

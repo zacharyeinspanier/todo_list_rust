@@ -145,7 +145,12 @@ pub mod app_state{
                     // insert into database, err if the list_id exists
                     match self.database.insert_into_list(list_name.clone(), list_id, self.user.get_user_id()){
                         Ok(_res)=>{break;},
-                        Err(_err)=>{continue;},
+                        Err(err)=>{
+                            match err.sqlite_error_code().unwrap(){
+                                rusqlite::ErrorCode::ConstraintViolation => { continue;}
+                                _ =>{panic!("{}", err)}
+                            }
+                        },
                     };
                 }
                 // add the new list to todo_lists
@@ -174,7 +179,12 @@ pub mod app_state{
                     // insert item into databse, err if the item_id already exists
                     match self.database.insert_into_items(item_name.clone(), item_id, list_id, 0){
                         Ok(_res)=>{break;},
-                        Err(_err) =>{continue;},
+                        Err(err) =>{
+                            match err.sqlite_error_code().unwrap(){
+                                rusqlite::ErrorCode::ConstraintViolation => { continue;}
+                                _ =>{panic!("{}", err)}
+                            }
+                        },
                     };
                 }
                 // add the item to the current list

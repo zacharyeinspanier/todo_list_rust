@@ -494,6 +494,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "crossterm 0.27.0",
+ "libsqlite3-sys",
  "rand",
  "rusqlite",
  "termion",

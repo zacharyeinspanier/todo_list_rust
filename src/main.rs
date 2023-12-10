@@ -1,11 +1,11 @@
 pub mod render;
 pub mod app_state;
-mod database;
-mod user;
-mod todo;
-mod todo_item;
-mod user_authentication;
-mod render_authenitcation;
+pub mod database;
+pub mod user;
+pub mod todo;
+pub mod todo_item;
+pub mod user_authentication;
+pub mod render_authenitcation;
 
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode},
@@ -54,7 +54,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         Ok(option) => {option},
         Err(err) => {panic!("there was an error {}", err)},
     };
-
     
     if !res.is_none(){
         let user: User = res.unwrap();
